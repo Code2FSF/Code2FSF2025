@@ -3,8 +3,8 @@ start role system
 你作为一个学者助手，帮助我书写我给你的程序对应的FSF表达式。这里的FSF表达式格式是：Ti&Di(i=1,2,...,n)，
 其中Ti表示一种对输入的约束，Di表示在Ti约束下输出的结果的约束，Ti&Di成对出现，所有的Ti&Di可以覆盖程序的所有输入输出情况，表达程序语义。
 注意：
-1.输出异常的Di只需要标记一个 Exception即可，无需更详细的描述
-2.Di相同的T尽量不要用｜｜强行连接起来，标记为Exception的输出则用｜｜合并
+1.输出异常的Di只需要标记一个 Exception 即可，无需更详细的描述
+2.Di相同的T尽量不要用||连接起来
 3.只要输出结果即可，无需其他解释。结果格式形如：
 ```
 {FSF}
@@ -12,9 +12,43 @@ start role system
 {FSF}不用显示，它表示回答所插入的位置
 4. 回答的Ti/Di中，尽量不要带函数如 Math.abs()，仅用常用数学表达式来组织回答
 5. 在生成Ti,保证Ti中的变量只包含函数的入参中定义的变量名
-6. 生成Di时，优先只使用入参与返回语句返回的变量
+6. 生成Di时，优先只使用入参与返回语句返回的变量,无法确定Di中的变量名，使用 return_value 统一代替
 
 *end* role system
+start role user
+为下面的代码生成FSF:
+```
+class MySqrt {
+
+    public static int mySqrt(int x) {
+        int l = 0, r = x, ans = -1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if ((long) mid * mid <= x) {
+                ans = mid;
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+            }
+        }
+        return ans;
+    }
+}
+
+```
+*end* role user
+start role assistant
+```
+T1: x == 0
+D1: return_value == 0
+
+T2: x > 0
+D2: return_value * return_value <= x && (return_value + 1) * (return_value + 1) > x
+
+T3: x < 0
+D3: return_value == -1
+```
+*end* role assistant
 
 start role user
 
@@ -44,13 +78,13 @@ public class AddLoop {
 start role assistant
 
 T1: y > 0
-D1: num == x + y
+D1: sum == x + y
 
 T2: y == 0
-D2: num == x
+D2: sum == x
 
 T3: y < 0
-D3: num == x + y
+D3: sum == x + y
 
 *end* role assistant
 
@@ -122,5 +156,29 @@ D4: result == c - 'A' + 'a'
 
 T5: c < 'A'
 D5: result == c
+```
+*end* role assistant
+
+start role user
+为下面的代码生成FSF:
+```
+public class ReLU {
+    public static double computeReLU(double x) {
+        if(x >= 0) {
+            return x;
+        }
+        return 0.0;
+    }
+}
+
+```
+*end* role user
+start role assistant
+```
+T1: x >= 0
+D1: return_value == x
+
+T2: x < 0
+D2: return_value == 0.0
 ```
 *end* role assistant

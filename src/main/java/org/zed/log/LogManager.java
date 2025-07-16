@@ -17,6 +17,7 @@ public class LogManager {
 
     private static final String RESOURCE_DIR = "resources";
     private static final String LOG_DIR = RESOURCE_DIR + "/" +"log";
+    private static final String FSF_REVIEW_LOG_DIR = LOG_DIR + "/" +"FSFReview";
     private static final String TRANS_WORK_DIR = RESOURCE_DIR + "/" + "trans";
     private static final String LOG_FILE_SUFFIX = ".txt";
     private static final String ADDED_PRINT_CODES_DIR = TRANS_WORK_DIR + "/"+ "addedPrintCodes";
@@ -44,6 +45,53 @@ public class LogManager {
             e.printStackTrace();
         }
     }
+    //自由指定log目录位置
+    public static void appendMessageInDiyDir(String codePath, ModelMessage msg, String model,String diy) throws IOException {
+        String logFilePath = codePath2DiyLogPath(codePath,model,diy);
+        java.nio.file.Path outputPath = java.nio.file.Paths.get(logFilePath);
+        java.nio.file.Files.createDirectories(outputPath.getParent());
+        try (java.io.BufferedWriter writer = java.nio.file.Files.newBufferedWriter(
+                outputPath,
+                java.nio.charset.StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND)) {
+            writer.write("start role " + msg.getRole());
+            writer.newLine();
+            writer.write(msg.getContent());
+            writer.newLine();
+            writer.write("*end* role " + msg.getRole());
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String codePath2CodeReviewLogPath(String codePath, String model) {
+        //从文件路径中提取文件名（在Java程序中，即类名）
+        String logTitle = codePath.substring(codePath.lastIndexOf("/") + 1, codePath.lastIndexOf("."));
+        logTitle = "log" + "-" + logTitle;
+        return FSF_REVIEW_LOG_DIR  + "/" +model + "/" + logTitle + LOG_FILE_SUFFIX;
+    }
+
+    public static void appendFSFReviewSummary(String codePath, String summary, String model, String diy) throws IOException {
+        String logFilePath = codePath2DiyLogPath(codePath,model,diy);
+        java.nio.file.Path outputPath = java.nio.file.Paths.get(logFilePath);
+        java.nio.file.Files.createDirectories(outputPath.getParent());
+        try (java.io.BufferedWriter writer = java.nio.file.Files.newBufferedWriter(
+                outputPath,
+                java.nio.charset.StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND)) {
+            writer.write("start log summary" );
+            writer.newLine();
+            writer.write(summary);
+            writer.newLine();
+            writer.write("*end* log summary");
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static String file2String(String FilePath) {
         StringBuilder sb = new StringBuilder();
@@ -62,7 +110,19 @@ public class LogManager {
         //从文件路径中提取文件名（在Java程序中，即类名）
         String logTitle = codePath.substring(codePath.lastIndexOf("/") + 1, codePath.lastIndexOf("."));
         logTitle = "log" + "-" + logTitle;
-        return LOG_DIR  + model + "/" + logTitle + LOG_FILE_SUFFIX;
+        return LOG_DIR  + "/" +model + "/" + logTitle + LOG_FILE_SUFFIX;
+    }
+    public static String codePath2DiyLogPath(String codePath,String model,String diy){
+        //从文件路径中提取文件名（在Java程序中，即类名）
+        String logTitle = codePath.substring(codePath.lastIndexOf("/") + 1, codePath.lastIndexOf("."));
+        logTitle = "log" + "-" + logTitle;
+        return diy  + "/" +model + "/" + logTitle + LOG_FILE_SUFFIX;
+    }
+
+    public static String codePath2FailedPath(String codePath){
+        //从文件路径中提取文件名（在Java程序中，即类名）
+        String title = codePath.substring(codePath.lastIndexOf("/") + 1);
+        return FAILED_DATASET_DIR  + "/" + title;
     }
     public static String codePath2AddedPrintPath(String codePath){
         //从文件路径中提取文件名（在Java程序中，即类名）
@@ -93,8 +153,6 @@ public class LogManager {
                 .filter(p -> p.toString().endsWith(".java"))
                 .forEach(p -> p.toFile().delete());
     }
-
-
 
     //删除Log目录下所有模型的日志文件
     public static void cleanLogOfModel(){
@@ -160,8 +218,8 @@ public class LogManager {
         while (i < specs.length) {
             if(specs[i].startsWith("T")){
                 String[] TD = new String[2];
-                TD[0] = specs[i].substring(specs[i].lastIndexOf(":")+1).trim();
-                TD[1] = specs[i+1].substring(specs[i+1].lastIndexOf(":")+1).trim();
+                TD[0] = specs[i].substring(specs[i].indexOf(":")+1).trim();
+                TD[1] = specs[i+1].substring(specs[i+1].indexOf(":")+1).trim();
                 TDs.add(TD);
                 i += 2;
             }else {
@@ -177,7 +235,7 @@ public class LogManager {
         return logString.substring(lastIndexOfAssisStart + 1, lastIndexOfAssisEnd);
     }
 
-    public static List<String[]> getLastestTDsFromLog(String logFilePath){
+    public static List<String[]> getLastestFSFFromLog(String logFilePath){
         String content = getLastestAssistantMsgFromLog(logFilePath);
         return parseTD(content);
     }
@@ -212,6 +270,24 @@ public class LogManager {
         String succFilePath = FAILED_DATASET_DIR + "/" + name;
         Files.copy(Path.of(filePath), Path.of(succFilePath), REPLACE_EXISTING);
     }
+
+    public static String codePath2SuccPath(String codePath) {
+        //从文件路径中提取文件名（在Java程序中，即类名）
+        String title = codePath.substring(codePath.lastIndexOf("/") + 1);
+        return SUCC_DATASET_DIR  + "/" + title;
+    }
+
+    public static void saveHistoryTestcases(String codePath,List<String> testCases){
+        int totalNum = testCases.size();
+        int count = 0;
+        System.out.println(codePath + "的测试用例历史记录如下，共[" + totalNum + "]个");
+        for (String testcase : testCases) {
+            System.out.println("------------------["+(++count) +"/"+totalNum+"]------------------");
+            System.out.println(testcase);
+        }
+        System.out.println("----------------------------------------");
+    }
+
 //    public static void main(String[] args) {
 //        String content = getLastestAssistantMsgFromLog(LOG_DIR + "/" + "deepseek-chat/"+"log-Abs.txt");
 //        List<String[]> TDs = parseTD(content);

@@ -1,0 +1,39 @@
+start log summary
+resources/succDataset/GyroHealthCheck.java
+*end* log summary
+start log summary
+resources/succDataset/UglyNumLoop.java
+*end* log summary
+start log summary
+resources/succDataset/Calculator.java
+*end* log summary
+start log summary
+resources/succDataset/Return100Nested.java
+*end* log summary
+start log summary
+resources/succDataset/AddLoopFor.java
+*end* log summary
+start log summary
+resources/succDataset/GPSCheck.java
+*end* log summary
+start log summary
+resources/succDataset/CanWinNim.java
+*end* log summary
+start log summary
+resources/succDataset/NegAbs.java
+*end* log summary
+start log summary
+resources/succDataset/ConvertToFahrenheit.java
+*end* log summary
+start log summary
+resources/succDataset/SmallestEvenMulBranch.java
+*end* log summary
+start log summary
+resources/succDataset/ConvertToKelvin.java
+*end* log summary
+start log summary
+resources/succDataset/DigitRoot.java
+*end* log summary
+start log summary
+resources/succDataset/Return100.java
+*end* log summary
